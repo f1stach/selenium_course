@@ -1,0 +1,679 @@
+Import selenium:
+1. W cmd: pip install xlrd – paczka pomagająca czytać pliki excela
+2. Pycharm / settings / project interpreter / plusik dla paczki / wpisz xlrd / wybierz install package
+3. Zainstaluj paczkę „selenium” z poziomu settings oraz cmd i zaimportuj w pliku: import selenium.
+
+Zarządzanie paczkami:
+a) pip list – lista zainstalowanych paczek z wersjami
+b) pip search nazwa_paczki – szukaj paczki
+c) pip uninstall nazwa_paczki – odinstaluj paczkę
+
+-------
+
+Uruchomienie selenium:
+- pobieramy chromedriver ze strony google i wrzucamy kopię do folderu projekt/drivers
+- w nowym pliku dodajemy:
+
+from selenium import webdriver
+
+# tworzymy nową przeglądarkę Chrome za pomocą testu:
+driver = webdriver.Chrome("/home/wojtek/PycharmProjects/selenium_udemy/drivers/chromedriver")
+
+# pobieramy konkretną stronę, która zostanie otwarta w przeglądarce przez test:
+driver.get("http://www.google.com")
+
+-------
+
+Instalujemy paczkę webdriver, która pomoże w zarządzaniu driverami i nie trzeba będzie pobierać driverów na dysk.
+Z terminala: pip install webdriver_manager
+Kod po zmianach:
+
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
+# tworzymy nową przeglądarkę Chrome za pomocą testu:
+driver = webdriver.Chrome(ChromeDriverManager().install())
+
+# pobieramy konkretną stronę, która zostanie otwarta w przeglądarce przez test:
+driver.get("http://www.google.com")
+
+----------
+
+Ustawianie wielkości okna przeglądarki:
+- wartości na sztywno:
+
+# ustawiamy wielkość okna przeglądarki na sztywno po odpaleniu przez test:
+driver.set_window_size(1600, 1200)
+
+- maksymalizacja na cały obszar ekranu:
+
+# maksymalizacja okna przeglądarki za pomocą jednej funkcji bez sztywnych wartości:
+driver.maximize_window()
+
+Druga opcja może wpłynąć na stabilność testów, bo maksymalizacja będzie wykonywana na różnych ekranach.
+
+-----------
+
+Zamykanie okna przeglądarki:
+
+Metody quit i close.
+Wykorzystujemy plik z dysku – Test.html
+- otwieramy stronkę testową w przeglądarce, klikamy Inspect i szukamy właściwości elementu przycisk („Click me”). Kopiujemy jego id i wpisujemy do funkcji find_element_by_id
+
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.get("file:///home/wojtek/PycharmProjects/selenium_udemy/Selenium_files/Test.html")
+driver.maximize_window()
+driver.find_element_by_id("newPage").click()
+
+Automatyczne klikanie przycisku na stronie działa OK – otworzyło się nowe okno.
+
+
+Metoda quit: zamyka wszystkie okna otwarte przez selenium.
+Metoda close: zamyka tylko to okno, na którym był focus czyli to, na którym działaliśmy.
+
+-------------
+
+Narzędzia developerskie w przeglądarce:
+Rozpoznawanie pozycji pól, buttonów itp., ich ID itp.
+
+------------
+
+Lokalizowanie elementów za pomocą id:
+Bardzo polecana taktyka gdy dostępne są id elementów na stronie.
+
+Korzystamy z Test.html – za pomocą inspectora wybieramy pole tekstowe – jego id to „fname” i wykorzystujemy w funkcji find_element_by_id w pliku demo_page_test2.
+Nic się nie wydarzyło poza otwarciem okna przeglądarki, ale błędów brak więc test wykonany.
+
+Inne podejście – metoda find_element(By.ID, „fname”) - bardziej elastyczna.
+
+------------
+
+Lokalizowanie elementów za pomocą atrybutu name:
+Ponownie nie każdy element posiada ten atrybut, jak w przypadku id.
+
+Metoda find_element_by_name
+
+------------
+
+Lokalizowanie elementów za pomocą atrybutu link wewnątrz tagu <a>
+bylinktext
+bypartialtext
+
+------------
+
+Szukamy po nazwie klasy - w test.html ukryty element w tagu <p>. Tag ten może posiadać
+więcej niż 1 klasę.
+
+Edycja stronki Test.html i dodanie drugiej klasy "druga".
+Można ich używać przemiennie, bo testy widzą obie nazwy klasy.
+
+-------------
+
+Lokalizacja po nazwie tagu:
+find_element_by_tag_name("")
+
+Dużo jest tagów więc ciężko dzięki temu odnieść się do czegoś szczególnego.
+
+-------------
+
+Lokalizacja elementów za pomocą selektorów CSS.
+
+Drugie po XPath najpotężniejsze narzędzie lokalizacji. Pozwalają odtworzyć poprzednie
+techniki lokalizacji, są elastyczne. Selektory CSS, np.:
+a - wybiera elementy z tagiem a
+div - wybiera elementy z tagiem div
+.red - wybiera elementy z klasą red. Kropka oznacza nazwę klasy.
+#fname - wybiera elementy z id fname. Hasz oznacza id.
+div.row - wybiera wszystkie elementy z tagiem div i klasą row.
+[aria-hidden="true"] - wybiera wszystkie elementy z  aria-hidden attribute o wartości równej  “true”
+li a - wszystkie tagi a  które są dzieckiem tagu li
+li + a - wybiera pierwszy tag a po każdym li
+li, a - wybiera wszystkie elementy li i wszystkie elementy a
+p:first-child - wybiera element p będący pierwszym dzieckiem tagu nadrzędnego (czyli tagu parent jak dwie linie nizej)
+p:last-child - wybiera element p będący ostatnim dzieckiem tagu nadrzędnego
+p:nth-child(2) - wybiera element p będący drugim dzieckiem tagu nadrzędnego
+
+<parent>
+	<p></p>
+	<p></p>
+	<p></p>
+</parent>
+
+--------------
+
+Lokalizacja za pomocą XPath (XML Path language).
+
+XPath umożliwia przemieszczanie się pomiędzy gałęziami plików XML i HTML. Poruszamy się po takim index.html:
+
+<html>
+    <body>
+        <h1>Witaj na stronie testowej</h1>
+        <button type="button" id="clickOnMe" onclick="alert('Hello world!')">Kliknij mnie!</button> <br>
+        <label for="fname"> First name:</label> <br>
+        <input type="text" name="fname" id="fname"><br>
+        <a href="https://www.w3schools.com">Visit W3Schools.com!</a> <br>
+        <a href="https://www.google.com">IamWeirdLink</a> <br>
+        <table border="1">
+            <tr>
+                <th class="tableHeader">Month</th>
+                <th class="tableHeader">Savings</th>
+            </tr>
+            <tr>
+                <td>January</td>
+                <td>$100</td>
+            </tr>
+        </table>
+    </body>
+</html>
+
+Chcemy dostać się do pierwszego elementu pierwszej tabeli.
+Ścieżka to: /html/body/table/tr/th - pisanie całej ścieżki to niedobra taktyka, bo moze się zmienić.
+
+Korzystając z XPatha, możemy zdefiniowac tzw. ściezkę relatywną, czyli nie trzeba podawać pełnej ścieżki,
+tylko jej fragment.
+Na szukanie w całej strukturze wybranego tagu pozwala struktura: podwójny slash i nazwa tagu, np.:
+//table/tr/th
+
+lub bezpośrednio i ze sprawdzeniem czy wewnątrz tagu jest pożądany tekst:
+//th[text()="Month"]
+
+Szukamy inputów, dla których wartość atrybutu name (do niego dostajemy się przez małpę) to fname:
+//input[@name='fname']
+
+Szuakmy inputów, dla których wartość id to fname:
+//input[@id='fname']
+
+Można zlecić przejście do tagu nadrzednego (dwie kropki), o jeden element do góry:
+//input[@id='fname']/..
+
+Można też wybrać following sibling czyli element znajdujący się na tym samym poziomie co nasz tag,
+ale po naszym input:
+//input[@id='fname']/following-sibling::table
+
+---------------
+
+Kopiowanie selektorów CSS i XPath z przeglądarki:
+
+Na stronie uruchamiamy Inspectora w Elements (w konsoli), zaznaczamy element i jego podświetloną
+strukturę w oknie Elements kopiujemy - albo jako XPath albo jako selektor CSS.
+
+Np. w Chrome:
+/html/body/form[2]/input[1] - jako XPath
+body > form:nth-child(17) > input[type=text]:nth-child(2) - jako CSS
+
+W Firefox może być trochę inna budowa, np.: //*[@id="clickOnMe"].
+Znak gwiazdki oznacza dowolny tag, ale można ją zmienić np. na button. Lepiej nie zostawiać gwiazdki,
+bo chcemy aby selektor był jak najbardziej unikalny, czyli może zawierać klasę. Gwiazdka daje zbyt
+szerokie podejście więc odpada.
+Selektor CSS kopiuje po nazwie.
+
+-----------------
+
+Listy elementów na stronie.
+
+Na stronie jest więcej danych tagów więc musimy jakoś je rozróżniać. Można tworzyć cale listy tagów.
+
+Dlatego tutaj find_elements a nie find_element (ta zwraca pojedynczy - konkretnie pierwszy -
+element a potrzebujemy ich kilka - find_elements zwroci wszystkie określone za pomocą tego selektora).
+
+------------------
+
+Klikanie na element.
+Metodę można wywołać albo bezpośrednio na elemencie albo przypisać do zmiennej.
+
+------------------
+
+Obsługa alertów
+Po wpisaniu komend warto wykonać debuggowanie aby potwierdzić, że alerty są zamykane.
+
+----------------
+
+Wyrażenie lambda
+W Pythonie możemy zdefiniować jednolinijkowe mini funkcje za pomocą tzw. wyrażenia lambda.
+
+Zamiast zapisywać funkcje w znanej nam postaci:
+
+def funkcja(x)
+	return x*2
+
+Możemy skorzystać z zapisu:
+
+double_number = lambda x: x*2
+
+Wynik dla poniższych wywołań będzie taki sam i będzie wynosił 4.
+
+funkcja(2)
+double_number(2)
+
+-----------------
+
+Page Object Pattern – wzorzec projektowy, którego celem jest zapewnienie łatwego utrzymania kodu testów automatycznych oraz możliwość ponownego użycia tego kodu. W Page Objectie definiujemy selektory do elementów znajdujących się na danej stronie aplikacji internetowej jak i akcje które możemy na tych elementach wykonać.
+
+Dla strony domowej Google:
+Możemy stworzyć Page Object - GoogleHomePage który będzie lokalizował pole wyszukiwania oraz przycisk "Szukaj w Google" oraz dostarczał metodę, umożliwiającą wyszukanie dowolnej frazy.
+
+class GoogleHomePage:
+	def __init__(self, driver):
+		self.driver = driver
+		self.search_input_name = 'q'
+		self.search_button_name = 'btnK'
+
+	def search_in_google(self, text):
+		self.driver.find_element_by_name(self.search_input_name).send_keys(text)
+		self.driver.find_element_by_name(self.search_button_name).click()
+
+Mapowanie między stroną, a klasą wygląda jak na poniższym obrazku:
+pole wyszukiwania -> wartość name dla tego inputa to "q"
+przycisk szukaj -> wartość name dla tego buttona to btnK
+
+----------------
+
+Przenoszenie lokatorów do oddzielnego pliku.
+
+Przenoszenie lokatorów do oddzielnego pliku jest promowane jako dobra praktyka dla testów Selenium w Pythonie (opisana w dokumentacji i powielana w wielu opracowaniach).
+
+O ile taki kod jest stosunkowo łatwy do utrzymania przy małych projektach, to dla większej aplikacji utrzymanie selektorów w innym miejscu niż page object robi się problematyczne. Mimo wszystko lokatory i metody są ze sobą ściśle powiązane i łatwiej jest je trzymać w jednej klasie
+
+Dlatego mimo, że pokazuje jak wydzielać lokatory do oddzielnego pliku to zachęcam do unikania tej praktyki i trzymania lokatorów i metod w jednej klasie .
+
+W projektach komercyjnych bardzo rzadko spotykałem się z lokatorami w oddzielnym pliku, ale chciałbym abyś miał/a świadomość, że istnieje taka możliwość i jeżeli zobaczysz taki kod to nie będzie on dla Ciebie zaskoczeniem.
+
+---------------
+
+Tworzenie raportu z testu.
+
+"""
+allure - paczka pozwalająca na generowanie raportów.
+Instalacja paczki: pip install allure-pytest
+Instacja CLI: https://docs.qameta.io/allure/
+"""
+
+Import selenium:
+1. W cmd: pip install xlrd – paczka pomagająca czytać pliki excela
+2. Pycharm / settings / project interpreter / plusik dla paczki / wpisz xlrd / wybierz install package
+3. Zainstaluj paczkę „selenium” z poziomu settings oraz cmd i zaimportuj w pliku: import selenium.
+
+Zarządzanie paczkami:
+a) pip list – lista zainstalowanych paczek z wersjami
+b) pip search nazwa_paczki – szukaj paczki
+c) pip uninstall nazwa_paczki – odinstaluj paczkę
+
+-------
+
+Uruchomienie selenium:
+- pobieramy chromedriver ze strony google i wrzucamy kopię do folderu projekt/drivers
+- w nowym pliku dodajemy:
+
+from selenium import webdriver
+
+# tworzymy nową przeglądarkę Chrome za pomocą testu:
+driver = webdriver.Chrome("/home/wojtek/PycharmProjects/selenium_udemy/drivers/chromedriver")
+
+# pobieramy konkretną stronę, która zostanie otwarta w przeglądarce przez test:
+driver.get("http://www.google.com")
+
+-------
+
+Instalujemy paczkę webdriver, która pomoże w zarządzaniu driverami i nie trzeba będzie pobierać driverów na dysk.
+Z terminala: pip install webdriver_manager
+Kod po zmianach:
+
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
+# tworzymy nową przeglądarkę Chrome za pomocą testu:
+driver = webdriver.Chrome(ChromeDriverManager().install())
+
+# pobieramy konkretną stronę, która zostanie otwarta w przeglądarce przez test:
+driver.get("http://www.google.com")
+
+----------
+
+Ustawianie wielkości okna przeglądarki:
+- wartości na sztywno:
+
+# ustawiamy wielkość okna przeglądarki na sztywno po odpaleniu przez test:
+driver.set_window_size(1600, 1200)
+
+- maksymalizacja na cały obszar ekranu:
+
+# maksymalizacja okna przeglądarki za pomocą jednej funkcji bez sztywnych wartości:
+driver.maximize_window()
+
+Druga opcja może wpłynąć na stabilność testów, bo maksymalizacja będzie wykonywana na różnych ekranach.
+
+-----------
+
+Zamykanie okna przeglądarki:
+
+Metody quit i close.
+Wykorzystujemy plik z dysku – Test.html
+- otwieramy stronkę testową w przeglądarce, klikamy Inspect i szukamy właściwości elementu przycisk („Click me”). Kopiujemy jego id i wpisujemy do funkcji find_element_by_id
+
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.get("file:///home/wojtek/PycharmProjects/selenium_udemy/Selenium_files/Test.html")
+driver.maximize_window()
+driver.find_element_by_id("newPage").click()
+
+Automatyczne klikanie przycisku na stronie działa OK – otworzyło się nowe okno.
+
+
+Metoda quit: zamyka wszystkie okna otwarte przez selenium.
+Metoda close: zamyka tylko to okno, na którym był focus czyli to, na którym działaliśmy.
+
+-------------
+
+Narzędzia developerskie w przeglądarce:
+Rozpoznawanie pozycji pól, buttonów itp., ich ID itp.
+
+------------
+
+Lokalizowanie elementów za pomocą id:
+Bardzo polecana taktyka gdy dostępne są id elementów na stronie.
+
+Korzystamy z Test.html – za pomocą inspectora wybieramy pole tekstowe – jego id to „fname” i wykorzystujemy w funkcji find_element_by_id w pliku demo_page_test2.
+Nic się nie wydarzyło poza otwarciem okna przeglądarki, ale błędów brak więc test wykonany.
+
+Inne podejście – metoda find_element(By.ID, „fname”) - bardziej elastyczna.
+
+------------
+
+Lokalizowanie elementów za pomocą atrybutu name:
+Ponownie nie każdy element posiada ten atrybut, jak w przypadku id.
+
+Metoda find_element_by_name
+
+------------
+
+Lokalizowanie elementów za pomocą atrybutu link wewnątrz tagu <a>
+bylinktext
+bypartialtext
+
+------------
+
+Szukamy po nazwie klasy - w test.html ukryty element w tagu <p>. Tag ten może posiadać
+więcej niż 1 klasę.
+
+Edycja stronki Test.html i dodanie drugiej klasy "druga".
+Można ich używać przemiennie, bo testy widzą obie nazwy klasy.
+
+-------------
+
+Lokalizacja po nazwie tagu:
+find_element_by_tag_name("")
+
+Dużo jest tagów więc ciężko dzięki temu odnieść się do czegoś szczególnego.
+
+-------------
+
+Lokalizacja elementów za pomocą selektorów CSS.
+
+Drugie po XPath najpotężniejsze narzędzie lokalizacji. Pozwalają odtworzyć poprzednie
+techniki lokalizacji, są elastyczne. Selektory CSS, np.:
+a - wybiera elementy z tagiem a
+div - wybiera elementy z tagiem div
+.red - wybiera elementy z klasą red. Kropka oznacza nazwę klasy.
+#fname - wybiera elementy z id fname. Hasz oznacza id.
+div.row - wybiera wszystkie elementy z tagiem div i klasą row.
+[aria-hidden="true"] - wybiera wszystkie elementy z  aria-hidden attribute o wartości równej  “true”
+li a - wszystkie tagi a  które są dzieckiem tagu li
+li + a - wybiera pierwszy tag a po każdym li
+li, a - wybiera wszystkie elementy li i wszystkie elementy a
+p:first-child - wybiera element p będący pierwszym dzieckiem tagu nadrzędnego (czyli tagu parent jak dwie linie nizej)
+p:last-child - wybiera element p będący ostatnim dzieckiem tagu nadrzędnego
+p:nth-child(2) - wybiera element p będący drugim dzieckiem tagu nadrzędnego
+
+<parent>
+	<p></p>
+	<p></p>
+	<p></p>
+</parent>
+
+--------------
+
+Lokalizacja za pomocą XPath (XML Path language).
+
+XPath umożliwia przemieszczanie się pomiędzy gałęziami plików XML i HTML. Poruszamy się po takim index.html:
+
+<html>
+    <body>
+        <h1>Witaj na stronie testowej</h1>
+        <button type="button" id="clickOnMe" onclick="alert('Hello world!')">Kliknij mnie!</button> <br>
+        <label for="fname"> First name:</label> <br>
+        <input type="text" name="fname" id="fname"><br>
+        <a href="https://www.w3schools.com">Visit W3Schools.com!</a> <br>
+        <a href="https://www.google.com">IamWeirdLink</a> <br>
+        <table border="1">
+            <tr>
+                <th class="tableHeader">Month</th>
+                <th class="tableHeader">Savings</th>
+            </tr>
+            <tr>
+                <td>January</td>
+                <td>$100</td>
+            </tr>
+        </table>
+    </body>
+</html>
+
+Chcemy dostać się do pierwszego elementu pierwszej tabeli.
+Ścieżka to: /html/body/table/tr/th - pisanie całej ścieżki to niedobra taktyka, bo moze się zmienić.
+
+Korzystając z XPatha, możemy zdefiniowac tzw. ściezkę relatywną, czyli nie trzeba podawać pełnej ścieżki,
+tylko jej fragment.
+Na szukanie w całej strukturze wybranego tagu pozwala struktura: podwójny slash i nazwa tagu, np.:
+//table/tr/th
+
+lub bezpośrednio i ze sprawdzeniem czy wewnątrz tagu jest pożądany tekst:
+//th[text()="Month"]
+
+Szukamy inputów, dla których wartość atrybutu name (do niego dostajemy się przez małpę) to fname:
+//input[@name='fname']
+
+Szuakmy inputów, dla których wartość id to fname:
+//input[@id='fname']
+
+Można zlecić przejście do tagu nadrzednego (dwie kropki), o jeden element do góry:
+//input[@id='fname']/..
+
+Można też wybrać following sibling czyli element znajdujący się na tym samym poziomie co nasz tag,
+ale po naszym input:
+//input[@id='fname']/following-sibling::table
+
+---------------
+
+Kopiowanie selektorów CSS i XPath z przeglądarki:
+
+Na stronie uruchamiamy Inspectora w Elements (w konsoli), zaznaczamy element i jego podświetloną
+strukturę w oknie Elements kopiujemy - albo jako XPath albo jako selektor CSS.
+
+Np. w Chrome:
+/html/body/form[2]/input[1] - jako XPath
+body > form:nth-child(17) > input[type=text]:nth-child(2) - jako CSS
+
+W Firefox może być trochę inna budowa, np.: //*[@id="clickOnMe"].
+Znak gwiazdki oznacza dowolny tag, ale można ją zmienić np. na button. Lepiej nie zostawiać gwiazdki,
+bo chcemy aby selektor był jak najbardziej unikalny, czyli może zawierać klasę. Gwiazdka daje zbyt
+szerokie podejście więc odpada.
+Selektor CSS kopiuje po nazwie.
+
+-----------------
+
+Listy elementów na stronie.
+
+Na stronie jest więcej danych tagów więc musimy jakoś je rozróżniać. Można tworzyć cale listy tagów.
+
+Dlatego tutaj find_elements a nie find_element (ta zwraca pojedynczy - konkretnie pierwszy -
+element a potrzebujemy ich kilka - find_elements zwroci wszystkie określone za pomocą tego selektora).
+
+------------------
+
+Klikanie na element.
+Metodę można wywołać albo bezpośrednio na elemencie albo przypisać do zmiennej.
+
+------------------
+
+Obsługa alertów
+Po wpisaniu komend warto wykonać debuggowanie aby potwierdzić, że alerty są zamykane.
+
+----------------
+
+Wyrażenie lambda
+W Pythonie możemy zdefiniować jednolinijkowe mini funkcje za pomocą tzw. wyrażenia lambda.
+
+Zamiast zapisywać funkcje w znanej nam postaci:
+
+def funkcja(x)
+	return x*2
+
+Możemy skorzystać z zapisu:
+
+double_number = lambda x: x*2
+
+Wynik dla poniższych wywołań będzie taki sam i będzie wynosił 4.
+
+funkcja(2)
+double_number(2)
+
+-----------------
+
+Page Object Pattern – wzorzec projektowy, którego celem jest zapewnienie łatwego utrzymania kodu testów automatycznych oraz możliwość ponownego użycia tego kodu. W Page Objectie definiujemy selektory do elementów znajdujących się na danej stronie aplikacji internetowej jak i akcje które możemy na tych elementach wykonać.
+
+Dla strony domowej Google:
+Możemy stworzyć Page Object - GoogleHomePage który będzie lokalizował pole wyszukiwania oraz przycisk "Szukaj w Google" oraz dostarczał metodę, umożliwiającą wyszukanie dowolnej frazy.
+
+class GoogleHomePage:
+	def __init__(self, driver):
+		self.driver = driver
+		self.search_input_name = 'q'
+		self.search_button_name = 'btnK'
+
+	def search_in_google(self, text):
+		self.driver.find_element_by_name(self.search_input_name).send_keys(text)
+		self.driver.find_element_by_name(self.search_button_name).click()
+
+Mapowanie między stroną, a klasą wygląda jak na poniższym obrazku:
+pole wyszukiwania -> wartość name dla tego inputa to "q"
+przycisk szukaj -> wartość name dla tego buttona to btnK
+
+----------------
+
+Przenoszenie lokatorów do oddzielnego pliku.
+
+Przenoszenie lokatorów do oddzielnego pliku jest promowane jako dobra praktyka dla testów Selenium w Pythonie (opisana w dokumentacji i powielana w wielu opracowaniach).
+
+O ile taki kod jest stosunkowo łatwy do utrzymania przy małych projektach, to dla większej aplikacji utrzymanie selektorów w innym miejscu niż page object robi się problematyczne. Mimo wszystko lokatory i metody są ze sobą ściśle powiązane i łatwiej jest je trzymać w jednej klasie
+
+Dlatego mimo, że pokazuje jak wydzielać lokatory do oddzielnego pliku to zachęcam do unikania tej praktyki i trzymania lokatorów i metod w jednej klasie .
+
+W projektach komercyjnych bardzo rzadko spotykałem się z lokatorami w oddzielnym pliku, ale chciałbym abyś miał/a świadomość, że istnieje taka możliwość i jeżeli zobaczysz taki kod to nie będzie on dla Ciebie zaskoczeniem.
+
+---------------
+
+Tworzenie raportu z testu.
+
+"""
+allure - paczka pozwalająca na generowanie raportów.
+Instalacja paczki: pip install allure-pytest
+Instacja CLI: https://docs.qameta.io/allure/
+
+To install Allure you need to do the following steps:
+Download the latest version as zip archive from https://github.com/allure-framework/allure-core/releases/latest.
+Unpack the archive to allure-commandline directory.
+Navigate to bin directory.
+Use allure script to run commandline.
+So you can also add unpacked directory to the PATH and then use allure command as well.
+"""
+
+Po instalacji narzędzia allure-commandline:
+1. W terminalu wpisać:
+$ pytest --alluredir=path_to_folder_report
+Odpalą się ustawione testy i w folderze z raportami pojawią się pliki z txt.
+
+2. Generujemy raport z terminala:
+$ allure serve paath_to_folder_report
+
+3. Otwarta zostanie strona z raportem.
+
+---
+
+Generowanie raportu dla testów dot. hoteli:
+
+1. Startujemy pytest w terminalu (komenda pytest). Jeżeli pytest nie uruchamia się z powodu ModuleNotFoundError dla jakiegoś folderu to tworzymy plik __init__.py i zostawiamy go bez zawartości a następnie kopiujemy do folderu z testami (u nas tests).
+
+2. Z terminala uruchamiamy: pytest --alluredir=path_to_folder_report
+
+3. Folder z reportami zawiera pliki, z których tworzymy raport: 
+$ allure serve paath_to_folder_report
+
+4. Importujemy allure w pliku z testami i dodajemy dekoratory:
+- nad klasą test_hotel_search o tresci: 
+@allure.title("This is title")
+@allure.description("Test description")
+
+- w pliku search_hotel nad set_city:
+@allure.step("Setting city name to '(1)'") - zamiast 1 podstawi parametr czyli city.
+
+- nad set_data_range:
+@allure.step("Setting date range from '(1)' to '(2)'")
+
+- nad set_travellers:
+@allure.step("Setting travellers - adults '(1)' and kids '(2)'")
+
+- nad get_hotel_names w search_results.py:
+@allure.step("Checking results travellers")
+
+5. W metodach na końcu dodajemy linię dodającą załącznik do raportu:
+- set_city:
+allure.attach(self.driver.get_screenshot_as_png(), name="set city", attachement_type=AttachmentType.PNG)
+
+- set_data_range:
+allure.attach(self.driver.get_screenshot_as_png(), name="set date range", attachement_type=AttachmentType.PNG)
+
+- set_travellers:
+allure.attach(self.driver.get_screenshot_as_png(), name="set travellers", attachement_type=AttachmentType.PNG)
+
+- get_hotel_names w pliku search_results przed pętlą for:
+allure.attach(self.driver.get_screenshot_as_png(), name="Results", attachement_type=AttachmentType.PNG)
+
+6. Odpalamy test. Zakończony sukcesem, w konsoli wrzucamy:
+$ allure serve=path_to_report
+
+Taki test zawiera już opisy i podłączone do nich zrzuty ekranu oraz logi z plików.
+
+-----------------
+
+Współdzielenie metody setup() - klasa nadrzędna -> metoda nr 1.
+
+Pokaz jak dzielić metodę setup() między testami, aby nie definiować jej dwukrotnie, aby była dostępna dla innych plików.
+W tym celu tworzy się klasę nadrzędną w nowym pliku w folderze.
+
+Po zmianach odpalamy pytest dla całego folderu - oba pliki testowe powinny zostać odpalone OK bez powielania kodu.
+
+----------------
+
+Współdzielenie metody setup() - plik conftest -> metoda nr 2
+
+Tworzymy plik conftest, w którym jest metoda setup(). Od teraz plik base_test z klasą BaseTest nie jest potrzebny, rozszerzanie klasy też nie.
+
+----------------
+
+Zrzut ekranu gdy test zakończy się niepowodzeniem.
+
+----------------
+
+Utworzenie DriverFactory - klasy, która definiuje co zrobić gdy chcemy uruchomić chrome lub firefox.
+
+----------------
+
+Wywołanie testów współbieżnie (równocześnie) aby zaoszczędzić czas - w terminalu:
+$ pytest -n=2
+
+Aby było git, dane w testach muszą być ułożone, a testy prawdziwie niezależne.
+
