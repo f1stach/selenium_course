@@ -677,3 +677,28 @@ $ pytest -n=2
 
 Aby było git, dane w testach muszą być ułożone, a testy prawdziwie niezależne.
 
+---------------
+
+Selenium Grid - tworzenie huba i node.
+
+Pobieramy i instalujemy javę.
+Pobieramy selenium server.
+Odpalamy server dla huba w konsoli: java -jar selenium-server-standalone-3.141.59.jar -role hub
+Sprawdzamy czy serwer działa - w przeglądarce: http://localhost:4444/grid/console - jeżeli strona się otwiera to hub stworzył się poprawnie.
+
+Odpalamy server dla node w konsoli: java -Dwebdriver.chrome.driver="C:/Users/CP/Downloads/chromedriver.exe" -jar selenium-server-standalone-3.141.59.jar -role node -hub http://192.168.8.150:4444/grid/register -port 5566
+
+Wersja servera selenium pobranego ze strony może być inna i należy wtedy wprowadzić odpowiednią wersję zamiast: 3.141.59
+
+Ścieżka do chromedrivera również musi zostać zaktualizowana. 
+
+---------------
+
+Uruchomienie testy na grid.
+
+Plik driver_factory:
+- zamiast return webdriver.Chrome... dajemy driver, do którego powinni łączyć się klienci (hub): 
+return webdriver.Remote("http://192.168...:4444/wd/hub", options=options),
+- linijkę wcześniej dodajemy opcje określające z jakiej przeglądarki chcemy skorzystać:
+options.set_capability("browserName", "chrome") i dopisujemy options do drivera w linii z return
+- odpalamy test, który jest oddelegowany pod wskazany adres ip, wie jaka to przeglądarka i test jest ok. Request poszedł do huba, hub sprawdził, że jest node i przekazał mu sesję dla browsera chrome. Ten przeszedł przez flow testu.
